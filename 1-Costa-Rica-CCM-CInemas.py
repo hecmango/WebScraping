@@ -1,6 +1,5 @@
 import selenium
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -9,8 +8,6 @@ import openpyxl
 from datetime import date
 
 # Configuración del driver de Chrome
-chrome_driver_path = 'C:\\Users\\sis\\Desktop\\UES\\chromedriver.exe'
-service = ChromeService(executable_path=chrome_driver_path)
 driver = webdriver.Chrome()
 driver.maximize_window()
 
@@ -81,24 +78,28 @@ def get_schedule_elements(driver, wait, href_index, nombre_cine):
                 continue
 
         # Imprimir los horarios agrupados por formato y guardar en el Excel
+        datos_extraidos = False
         for formato, datos in horarios_por_formato.items():
-            for hora in datos["horarios"]:
-                # Obtener la fecha actual
-                fecha_actual = date.today().strftime("%Y-%m-%d")
+            if datos["horarios"]:  # Verifica si hay horarios para el formato
+                for hora in datos["horarios"]:
+                    # Obtener la fecha actual
+                    fecha_actual = date.today().strftime("%Y-%m-%d")
 
-                # Obtener el nombre de la sala
-                try:
-                    sala_element = wait.until(
-                        EC.presence_of_element_located((By.CSS_SELECTOR, "#body-wrap #wrap header div.cactus-nav  #main-nav nav.navbar.navbar-default div.container div.navbar-header a.navbar-brand div.primary-logo img"))
-                    )
-                    nombre_sala = sala_element.get_attribute("title")
-                except TimeoutException:
-                    nombre_sala = "No se pudo encontrar la sala."
+                    # Obtener el nombre de la sala
+                    try:
+                        sala_element = wait.until(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, "#body-wrap #wrap header div.cactus-nav  #main-nav nav.navbar.navbar-default div.container div.navbar-header a.navbar-brand div.primary-logo img"))
+                        )
+                        nombre_sala = sala_element.get_attribute("title")
+                    except TimeoutException:
+                        nombre_sala = "No se pudo encontrar la sala."
 
-                # Agregar los datos al Excel
-                sheet.append([fecha_actual, "Costa Rica", "CCMCinemas", nombre_cine, nombre_pelicula, formato, datos["idioma"], hora])
+                    # Agregar los datos al Excel
+                    print(f"Guardando datos para: {nombre_pelicula}, Formato: {formato}, Idioma: {datos['idioma']}, Hora: {hora}")
+                    sheet.append([fecha_actual, "Costa Rica", "CCMCinemas", nombre_cine, nombre_pelicula, formato, datos["idioma"], hora])
+                    datos_extraidos = True
 
-        return True
+        return datos_extraidos
 
     except TimeoutException:
         return False
@@ -106,27 +107,27 @@ def get_schedule_elements(driver, wait, href_index, nombre_cine):
 try:
     for selector, nombre_cine in selectores:
         driver.get("https://www.ccmcinemas.com")
-        driver.implicitly_wait(10)
-        wait = WebDriverWait(driver, 10)
+        driver.implicitly_wait(5)
+        wait = WebDriverWait(driver, 5)
 
         # Hacer clic en el selector actual para ir a la página de películas
         target_element = wait.until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, selector))
         )
-        target_element.click()
+        driver.execute_script("arguments[0].click();", target_element)
 
         # Esperar un momento para que la página cargue
-        driver.implicitly_wait(10)
+        driver.implicitly_wait(5)
 
         # Verificar si el anuncio está presente y cerrarlo si es necesario
         try:
             anuncio = wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="spu-2294"]')))
             if anuncio:
                 close_button = driver.find_element(By.XPATH, '/html/body/div[4]/span[1]/i')
-                close_button.click()
-                driver.implicitly_wait(5)
+                driver.execute_script("arguments[0].click();", close_button)
+                driver.implicitly_wait(7)
         except TimeoutException:
-            print("")
+            print("No se encontró ningún anuncio para cerrar.")
 
         # Detectar dinámicamente el número de películas
         peliculas = driver.find_elements(By.CSS_SELECTOR, ".col-md-4 .pt-cv-content > ._self")
@@ -144,10 +145,10 @@ try:
                 try:
                     # Intentar hacer clic en el elemento de la película
                     peliculas = driver.find_elements(By.CSS_SELECTOR, ".col-md-4 .pt-cv-content > ._self")
-                    peliculas[href_index].click()
+                    driver.execute_script("arguments[0].click();", peliculas[href_index])
 
                     # Esperar indefinidamente hasta que el body esté presente
-                    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
+                    WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
 
                     # Seguir la jerarquía para encontrar el nombre de la película
                     contenedor_principal = wait.until(
@@ -188,27 +189,39 @@ try:
                     div_acordion = wait.until(
                         EC.presence_of_element_located((By.ID, 'ContentPlaceHolder1_accordion'))
                     )
+                      # Verificar la fecha en el elemento con el ID "ContentPlaceHolder1_DropDown_Dias_Esquema"
+                    elemento_fecha = wait.until(
+                        EC.presence_of_element_located((By.XPATH, '//*[@id="ContentPlaceHolder1_DropDown_Dias_Esquema"]'))
+                    )
+                    fecha_texto = elemento_fecha.text.strip().split('\n')[0]  # Obtener solo el texto de la fecha
 
+                    if not fecha_texto.startswith("HOY"):
+                        print(f"La fecha '{fecha_texto}' no es 'HOY'. Se omite la película.")
+                        driver.back()
+                        break
                     # Intentar obtener los elementos del horario
                     if not get_schedule_elements(driver, wait, href_index, nombre_cine):
-                        print(f"Intento {attempt + 1}: No se encontraron elementos de horario para la película {href_index + 1}. Reintentando...")
+                        print(f"Intento {attempt + 1}: Fallo al obtener elementos del horario para la película {href_index + 1}.")
+                        driver.switch_to.default_content()
                         driver.back()
                         attempt += 1
                         continue
-                    else:
-                        print(f"Elementos de horario encontrados para la película {href_index + 1}.")
-                        driver.back()
-                        break
-                except (TimeoutException, NoSuchElementException, ElementClickInterceptedException):
-                    print(f"Intento {attempt + 1}: Error al hacer clic en el elemento de la película {href_index + 1}. Reintentando...")
+
+                    # Volver atrás para seguir con la siguiente película
+                    driver.switch_to.default_content()
+                    driver.back()
+                    break
+
+                except (TimeoutException, NoSuchElementException, ElementClickInterceptedException) as e:
+                    print(f"Intento {attempt + 1}: Hubo un problema al procesar la película {href_index + 1}. Reintentando... {e}")
+                    driver.switch_to.default_content()
                     driver.back()
                     attempt += 1
-                    continue
 
 finally:
-    driver.quit()
+    # Guardar el archivo Excel
+    workbook.save("horarios_peliculas.xlsx")
+    print("Archivo de Excel guardado exitosamente.")
 
-# Guardar el libro de Excel
-nombre_archivo = f"Cartelera_CCM_{date.today().strftime('%Y%m%d')}.xlsx"
-workbook.save(nombre_archivo)
-print(f"Datos guardados en {nombre_archivo}")
+    # Cerrar el navegador
+    driver.quit()
