@@ -49,10 +49,9 @@ try:
                             'Cine': 'CinesModerno',
                             'Nombre Cine': cine['nombre'],
                             'Título': nombre,
-                            'Hora': horario.text.strip(),
+                            'Hora': horario.text.split("(")[0].strip(),
                             'Idioma': idioma,
-                            'Formato': formato,
-                        })
+                            'Formato': formato.replace("|","").strip(),                        })
                 except Exception as e:
                     print(f"Error al procesar la película: {e}")
 
