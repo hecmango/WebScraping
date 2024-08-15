@@ -60,7 +60,7 @@ try:
                             horario = parte.split('</strong>')[1].strip().split('-')[1].strip()
 
                             peliculas_info.append({
-                                'Fecha': datetime.now().strftime("%m/%d/%y"),
+                                'Fecha': datetime.now().strftime("%m-%d-%Y"),
                                 'País': 'Honduras',
                                 'Cine': 'Unicines',
                                 'Nombre Cine': cine['nombre'],
