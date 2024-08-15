@@ -65,9 +65,9 @@ try:
                                 'Cine': 'Unicines',
                                 'Nombre Cine': cine['nombre'],
                                 'Título': nombre_pelicula,
-                                'Formato': formato,  
+                                'Hora': horario,
                                 'Idioma': idioma,
-                                'Horario': horario,
+                                'Formato': formato,  
                             })
                         except Exception as e:
                             print(f"Error al procesar la parte: {parte}, Error: {e}")

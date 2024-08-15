@@ -77,9 +77,9 @@ def extraer_datos_cinepolis(urls):
                                     'Cine': 'Cinepolis',
                                     'Nombre Cine': cine_name,
                                     'Pelicula': nombre_pelicula,
+                                    'Hora': horario,
                                     'Idioma': idioma,
                                     'Formato': formato,
-                                    'Horario': horario
                                 })
             except Exception:
                 print(f'Error: No hay datos en {ciudad_url}')
@@ -148,9 +148,9 @@ def extraer_datos_panama():
                                 'Cine': "Cinepolis",
                                 'Nombre Cine': cine_nombre,
                                 'Pelicula': title,
+                                'Hora': showtime,
                                 'Idioma': language,
                                 'Formato': format_type,
-                                'Horario': showtime
                             })
         except Exception:
             print(f'Error: No hay datos en {ciudad_url_panama}')
@@ -214,9 +214,9 @@ def extraer_datos_honduras():
                         "Cine": "Cinépolis",
                         "Nombre Cine": cine_nombre,
                         "Pelicula": nombre_pelicula,
-                        "Idioma": idioma,
+                        "Hora": hora,
                         "Formato": formato,
-                        "Horario": hora
+                        "Idioma": idioma,
                     })
 
             except NoSuchElementException:
