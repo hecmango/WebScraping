@@ -35,45 +35,46 @@ try:
                 continue
 
         for pelicula in peliculas:
-            # Extraer el nombre de la película
-            nombre_pelicula = pelicula.find_element(By.TAG_NAME, 'h3').text.strip()
+            try:
+                # Extraer el nombre de la película
+                nombre_pelicula = pelicula.find_element(By.TAG_NAME, 'h3').text.strip()
 
-            detalles = pelicula.find_elements(By.CSS_SELECTOR, 'div.tour_list_desc > div > span')
-            
-            for detalle in detalles:
-                contenido_html = detalle.get_attribute('innerHTML')
-                partes = contenido_html.split('<br>')
+                detalles = pelicula.find_elements(By.CSS_SELECTOR, 'div.tour_list_desc > div > span')
+                
+                for detalle in detalles:
+                    contenido_html = detalle.get_attribute('innerHTML')
+                    partes = contenido_html.split('<br>')
 
-                for parte in partes:
-                    try:
-                        # Extraer el formato e idioma
-                        if '</span>' in parte:
+                    for parte in partes:
+                        try:
                             formato_e_idioma = parte.split('</span>')[1].replace('<strong>', '').split('</strong>')[0].strip()
-                        else:
-                            formato_e_idioma = parte.replace('<strong>', '').split('</strong>')[0].strip()
 
-                        if '2D' in formato_e_idioma:  
-                            formato = '2D'
-                        else:
-                            formato = '3D'
+                            if '2D' in formato_e_idioma:  
+                                formato = '2D'
+                            else:
+                                formato = '3D'
 
-                        idioma = formato_e_idioma.split(' ')[2]
+                            idioma = formato_e_idioma.split(' ')[2]
 
-                        # Extraer horario
-                        horario = parte.split('</strong>')[1].strip().split('-')[1].strip()
+                            # Extraer horario
+                            horario = parte.split('</strong>')[1].strip().split('-')[1].strip()
 
-                        peliculas_info.append({
-                            'Fecha': datetime.now().strftime("%m/%d/%y"),
-                            'País': 'Honduras',
-                            'Cine': 'Unicines',
-                            'Nombre Cine': cine['nombre'],
-                            'Título': nombre_pelicula,
-                            'Formato': formato,  
-                            'Idioma': idioma,
-                            'Horario': horario,
-                        })
-                    except Exception as e:
-                        print(f"Error al procesar la parte: {parte}, Error: {e}")
+                            peliculas_info.append({
+                                'Fecha': datetime.now().strftime("%m/%d/%y"),
+                                'País': 'Honduras',
+                                'Cine': 'Unicines',
+                                'Nombre Cine': cine['nombre'],
+                                'Título': nombre_pelicula,
+                                'Formato': formato,  
+                                'Idioma': idioma,
+                                'Horario': horario,
+                            })
+                        except Exception as e:
+                            print(f"Error al procesar la parte: {parte}, Error: {e}")
+
+            except Exception as e:
+                print(f"No se econtraron peliculas para el cine: {cine['nombre']}, Error: {e}")
+                continue
 
     # Crear un DataFrame de Pandas con la información
     df = pd.DataFrame(peliculas_info)
