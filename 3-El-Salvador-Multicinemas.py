@@ -41,7 +41,7 @@ def extract_movie_data(container):
         movie_data = []
         for showtime in showtimes:
             movie_data.append([
-                today_date,
+                datetime.datetime.now().strftime("%m-%d-%Y"),
                 "El Salvador",
                 "Multicinema",
                 cinema_name.replace("Complejo: ", ""),  # Remover "Complejo: " del nombre del cine
@@ -72,7 +72,7 @@ today_date = datetime.datetime.now().strftime("%d/%m/%Y")
 
 try:
     # Encontrar todos los contenedores de películas usando los IDs dinámicos que cambian
-    i = 493430  # Empezamos desde el ID base que proporcionaste
+    i = 495356  # Empezamos desde el ID base que proporcionaste
     while True:
         try:
             # Intentamos encontrar el contenedor de la película con el ID actual
