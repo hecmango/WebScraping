@@ -25,7 +25,7 @@ try:
     for cine in cines_info:
         driver.get(cine['direccion'])
 
-        for i in range(1, 10):  # Asumiendo un máximo de 10 posibles collapses
+        for i in range(1, len(cines_info)+1):
             try:
                 xpath = f'//*[@id="collapse_{i}"]/div/div'
                 peliculas = WebDriverWait(driver, 2).until(EC.presence_of_all_elements_located((By.XPATH, xpath)))
@@ -52,19 +52,23 @@ try:
                         else:
                             formato_e_idioma = parte.replace('<strong>', '').split('</strong>')[0].strip()
 
-                        formato = "2D"  # Forzar el formato como "2D"
-                        idioma = formato_e_idioma.split(' ')[2]  # Suponiendo que el idioma es la segunda palabra
+                        if '2D' in formato_e_idioma:  
+                            formato = '2D'
+                        else:
+                            formato = '3D'
+
+                        idioma = formato_e_idioma.split(' ')[2]
 
                         # Extraer horario
                         horario = parte.split('</strong>')[1].strip().split('-')[1].strip()
 
                         peliculas_info.append({
-                            'Fecha': datetime.now().strftime("%d/%m/%y"),
+                            'Fecha': datetime.now().strftime("%m/%d/%y"),
                             'País': 'Honduras',
                             'Cine': 'Unicines',
                             'Nombre Cine': cine['nombre'],
                             'Título': nombre_pelicula,
-                            'Formato': formato,  # Siempre será "2D"
+                            'Formato': formato,  
                             'Idioma': idioma,
                             'Horario': horario,
                         })
