@@ -92,6 +92,21 @@ def extraer_datos_panama():
     FORMATOS = {"2D", "3D", "DIG"}
 
     driver.get(url_panama)
+
+    try:
+        # Verificar si aparece el modal de video y cerrarlo si es el caso
+        WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, 'tk-video')))
+        
+        try:
+            # Buscar el botón de cerrar el modal y hacer clic en él
+            cerrar_boton = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, 'takeover-close')))
+            cerrar_boton.click()
+            print("Modal cerrado.")
+        except Exception as e:
+            print("No se encontró el botón de cerrar del modal o no se pudo hacer clic: ", e)
+
+    except TimeoutException:
+        print("No se mostró el modal de video.")
     cartelera_panama = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="busqueda"]/div[3]/input')))
     cartelera_panama.click()
 
@@ -219,7 +234,7 @@ try:
     datos_panama = extraer_datos_panama()
     datos_honduras = extraer_datos_honduras()
 
-    df = pd.DataFrame(datos_cinepolis + datos_panama + datos_honduras)
+    df = pd.DataFrame( datos_cinepolis+ datos_panama + datos_honduras)
     df.to_excel(f"cartelera_{datetime.now().strftime('%Y-%m-%d')}.xlsx", index=False)
     print(f"Datos exportados exitosamente a cartelera_{datetime.now().strftime('%Y-%m-%d')}.xlsx")
 finally:
