@@ -40,12 +40,11 @@ try:
 
             detalles = pelicula.find_elements(By.CSS_SELECTOR, 'div.tour_list_desc > div > span')
             
-
             for detalle in detalles:
                 contenido_html = detalle.get_attribute('innerHTML')
                 partes = contenido_html.split('<br>')
 
-            for parte in partes:
+                for parte in partes:
                     try:
                         # Extraer el formato e idioma
                         if '</span>' in parte:
@@ -53,7 +52,7 @@ try:
                         else:
                             formato_e_idioma = parte.replace('<strong>', '').split('</strong>')[0].strip()
 
-                        formato = formato_e_idioma.split(' ')[0]+' '+formato_e_idioma.split(' ')[1]  # Suponiendo que el formato es la primera palabra
+                        formato = "2D"  # Forzar el formato como "2D"
                         idioma = formato_e_idioma.split(' ')[2]  # Suponiendo que el idioma es la segunda palabra
 
                         # Extraer horario
@@ -65,7 +64,7 @@ try:
                             'Cine': 'Unicines',
                             'Nombre Cine': cine['nombre'],
                             'Título': nombre_pelicula,
-                            'Formato': formato,
+                            'Formato': formato,  # Siempre será "2D"
                             'Idioma': idioma,
                             'Horario': horario,
                         })

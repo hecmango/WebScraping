@@ -8,7 +8,7 @@ import pandas as pd
 import time
 
 # Inicialización del navegador y maximización de pantalla
-driver = webdriver.Edge()
+driver = webdriver.Chrome()
 driver.maximize_window()
 
 # Navegar a la página
@@ -54,6 +54,12 @@ try:
                 formato = next((f for f in posibles_formatos if f in formato_idioma.text), "N/A")
                 idioma = next((f for f in posibles_idiomas if f in formato_idioma.text), "N/A")
 
+                # Cambiar "Subtitulada" o "SUBT" por "SUB" y "Doblada" o "DOB" por "DOB"
+                if idioma in ["Subtitulada"]:
+                    idioma = "Sub"
+                elif idioma in ["Doblada"]:
+                    idioma = "Dob"
+    
                 horarios_container = cartelera.find_elements(By.XPATH, './/div[@align="center"]')
                 if(horarios_container):
                     horarios = horarios_container[0].find_elements(By.XPATH, './/div[contains(@class, "tanda-item") or contains(@class, "tandach-item")]')
@@ -64,9 +70,9 @@ try:
                             idioma_en_horario = next((f for f in posibles_idiomas if f in horario.text), "N/A")
                             if idioma_en_horario != "N/A":
                                 if idioma_en_horario == 'SUBT':
-                                    idioma='Subtitulada'
+                                    idioma='Sub'
                                 else:
-                                    idioma='Doblada'
+                                    idioma='Dob'
                                 hora = hora.replace(idioma_en_horario, "")
 
                             if not horario.text or horario.text == "NO DISPONIBLE":

@@ -14,40 +14,55 @@ url = 'https://www.metrocinemas.hn/'
 driver.get(url)
 
 try:
+    cines = [
+        {'nombre': 'America', 'id': 'Semana_501'},
+        {'nombre': 'Metromall', 'id': 'Semana_502'},
+        {'nombre': 'Miraflores', 'id': 'Semana_504'},
+        {'nombre': 'MegaMall', 'id': 'Semana_509'},
+        {'nombre': 'Novacentro', 'id': 'Semana_510'},
+        {'nombre': 'Choloma', 'id': 'Semana_511'},
+        {'nombre': 'Cortes', 'id': 'Semana_512'},
+        {'nombre': 'Santa Rosa', 'id': 'Semana_513'},
+    ]
 
-        cines = [
-              {'nombre': 'America', 'id': 'Semana_501'},
-              {'nombre': 'Metromall', 'id': 'Semana_502'},
-              {'nombre': 'Miraflores', 'id': 'Semana_504'},
-              {'nombre': 'MegaMall', 'id': 'Semana_509'},
-              {'nombre': 'Novacentro', 'id': 'Semana_510'},
-              {'nombre': 'Choloma', 'id': 'Semana_511'},
-              {'nombre': 'Cortes', 'id': 'Semana_512'},
-              {'nombre': 'Santa Rosa', 'id': 'Semana_513'},
-        ]
+    peliculas_info = []
 
-        peliculas_info =[]
-
-        for cine in cines:
+    for cine in cines:
+        try:
+            # Abrir el menú y seleccionar la cartelera
             menu = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, 'cd-menu-trigger'))).click()
-
             cartelera = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="cd-lateral-nav"]/ul[1]/li/a'))).click()
+
             # Seleccionar el cine
             cine_link = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, cine['id'])))
             cine_link.click()
 
-            # Esperar a que se carguen las peliculas
+            # Esperar a que se carguen las películas
             peliculas = WebDriverWait(driver, 5).until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="cartelera"]/div/div[5]/div')))
 
             for pelicula in peliculas:
                 try:
+                    # Extraer el nombre, idioma, formato y horarios
                     nombre = pelicula.find_element(By.CSS_SELECTOR, '.combopelititulo h2').text.strip()
                     nombre = nombre.replace("2D", "").replace("3D", "").replace("VIP", "").replace("DOB", "").replace("SVIP", "").strip()
+                    
                     idioma = pelicula.find_element(By.XPATH, './/div[contains(@class, "icosdetalle") and img[@src="./App_Themes/1002/img/icos-38.jpg"]]/p').text.strip()
+                    if "Ingles" in idioma:
+                        idioma = "Sub"
+                    elif "Español" in idioma:
+                        idioma = "Dob"
+                    
                     formato = pelicula.find_element(By.XPATH, './/div[contains(@class, "icosdetalle") and img[@src="./App_Themes/1002/img/icos-42.png"]]/p').text.strip()
-                    formato = formato.replace("|","").strip()
+                    if "2D" in formato:
+                        formato = "2D"
+                    elif "3D" in formato:
+                        formato = "3D"
+                    else:
+                        formato = "Desconocido"  # En caso de que no se encuentre ni 2D ni 3D
+                    
                     horarios = pelicula.find_elements(By.CLASS_NAME, 'func-horario')
 
+                    # Guardar la información de cada horario
                     for horario in horarios:
                         horario = horario.text.split("(")[0].strip()
                         peliculas_info.append({
@@ -61,18 +76,23 @@ try:
                             'Formato': formato,
                         })
                 except Exception as e:
-                    print(f"Error al procesar la película: {e}")
+                    print(f"Error al procesar la película en el cine {cine['nombre']}: {e}")
+        
+        except Exception as e:
+         
+            continue  # Continuar con el siguiente cine
 
-        #Crear un DataFrame de Pandas con la información
+    # Crear un DataFrame de Pandas con la información
+    if peliculas_info:
         df = pd.DataFrame(peliculas_info)
-
         # Exportar el DataFrame a una hoja de Excel
         df.to_excel('Honduras-Metrocinemas.xlsx', index=False)
-
         print("Datos exportados exitosamente a Honduras-Metrocinemas.xlsx")
+    else:
+        print("No se encontraron datos para ningún cine.")
 
 except Exception as e:
-     print(f"Error: {e}")
+    print(f"Error: {e}")
 
 finally:
     driver.quit()

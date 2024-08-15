@@ -33,25 +33,43 @@ try:
             cine_link.click()
 
             # Esperar a que se carguen las peliculas
-            peliculas = WebDriverWait(driver, 5).until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="cartelera"]')))
+            peliculas = WebDriverWait(driver, 5).until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="cartelera"]/div/div[5]/div')))
 
             for pelicula in peliculas:
                 try:
+                    # Extraer el nombre, idioma, formato y horarios
                     nombre = pelicula.find_element(By.CSS_SELECTOR, '.combopelititulo h2').text.strip()
-                    idioma = pelicula.find_element(By.XPATH, './/div[contains(@class, "icosdetalle") and img[@src="./App_Themes/999/img/icos-38.jpg"]]/p').text.strip()
-                    formato = pelicula.find_element(By.XPATH, './/div[contains(@class, "icosdetalle") and img[@src="./App_Themes/999/img/icos-42.png"]]/p').text.strip()
+                    nombre = nombre.replace("2D", "").replace("3D", "").replace("VIP", "").replace("DOB", "").replace("SVIP", "").strip()
+                    
+                    idioma = pelicula.find_element(By.XPATH, './/div[contains(@class, "icosdetalle") and img[@src="./App_Themes/1002/img/icos-38.jpg"]]/p').text.strip()
+                    if "Ingles" in idioma:
+                        idioma = "Sub"
+                    elif "Español" in idioma:
+                        idioma = "Dob"
+                    
+                    formato = pelicula.find_element(By.XPATH, './/div[contains(@class, "icosdetalle") and img[@src="./App_Themes/1002/img/icos-42.png"]]/p').text.strip()
+                    if "2D" in formato:
+                        formato = "2D"
+                    elif "3D" in formato:
+                        formato = "3D"
+                    else:
+                        formato = "Desconocido"  # En caso de que no se encuentre ni 2D ni 3D
+                    
                     horarios = pelicula.find_elements(By.CLASS_NAME, 'func-horario')
 
+                    # Guardar la información de cada horario
                     for horario in horarios:
+                        horario = horario.text.split("(")[0].strip()
                         peliculas_info.append({
                             'Fecha': datetime.now().strftime("%d/%m/%y"),
-                            'País': 'Panama',
-                            'Cine': 'CinesModerno',
+                            'País': 'Honduras',
+                            'Cine': 'MetroCinemas',
                             'Nombre Cine': cine['nombre'],
                             'Título': nombre,
-                            'Hora': horario.text.split("(")[0].strip(),
+                            'Hora': horario,
                             'Idioma': idioma,
-                            'Formato': formato.replace("|","").strip(),                        })
+                            'Formato': formato,
+                        })                        
                 except Exception as e:
                     print(f"Error al procesar la película: {e}")
 
@@ -64,7 +82,7 @@ try:
         print("Datos exportados exitosamente a Panama-CinesModernos.xlsx")
 
 except Exception as e:
-     print(f"Error: {e}")
+     print(f"{e} No se encontraron peliculas")
 
 finally:
     driver.quit()
