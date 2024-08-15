@@ -14,75 +14,90 @@ url = 'https://www.cinesmodernopanama.com/'
 driver.get(url)
 
 try:
+    cines = [
+        {'nombre': 'David', 'id': 'Semana_551'},
+        {'nombre': 'Chitré', 'id': 'Semana_552'},
+        {'nombre': 'Santiago', 'id': 'Semana_553'},
+        {'nombre': 'Coronado', 'id': 'Semana_555'},
+    ]
 
-        cines = [
-              {'nombre': 'David', 'id': 'Semana_551'},
-              {'nombre': 'Chitré', 'id': 'Semana_552'},
-              {'nombre': 'Santiago', 'id': 'Semana_553'},
-              {'nombre': 'Coronado', 'id': 'Semana_555'},
-        ]
+    peliculas_info = []
 
-        peliculas_info =[]
+    for cine in cines:
+        # Abrir el menú y seleccionar cartelera
+        menu = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'cd-menu-trigger')))
+        menu.click()
 
-        for cine in cines:
-            menu = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, 'cd-menu-trigger'))).click()
+        cartelera = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="cd-lateral-nav"]/ul[1]/li/a')))
+        cartelera.click()
 
-            cartelera = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="cd-lateral-nav"]/ul[1]/li/a'))).click()
-            # Seleccionar el cine
-            cine_link = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, cine['id'])))
-            cine_link.click()
+        # Seleccionar el cine
+        cine_link = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, cine['id'])))
+        cine_link.click()
 
-            # Esperar a que se carguen las peliculas
-            peliculas = WebDriverWait(driver, 5).until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="cartelera"]/div/div[5]/div')))
+        # Esperar a que se carguen las películas
+        peliculas = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="cartelera"]/div/div[5]/div')))
 
-            for pelicula in peliculas:
+        for pelicula in peliculas:
+            try:
+                # Extraer el nombre, idioma, formato y horarios
+                nombre = pelicula.find_element(By.CSS_SELECTOR, '.combopelititulo h2').text.strip()
+                nombre = nombre.replace("2D", "").replace("3D", "").replace("VIP", "").replace("DOB", "").replace("SVIP", "").strip()
+
+                # Intentar encontrar el idioma
                 try:
-                    # Extraer el nombre, idioma, formato y horarios
-                    nombre = pelicula.find_element(By.CSS_SELECTOR, '.combopelititulo h2').text.strip()
-                    nombre = nombre.replace("2D", "").replace("3D", "").replace("VIP", "").replace("DOB", "").replace("SVIP", "").strip()
-                    
-                    idioma = pelicula.find_element(By.XPATH, './/div[contains(@class, "icosdetalle") and img[@src="./App_Themes/1002/img/icos-38.jpg"]]/p').text.strip()
-                    if "Ingles" in idioma:
-                        idioma = "Sub"
-                    elif "Español" in idioma:
-                        idioma = "Dob"
-                    
-                    formato = pelicula.find_element(By.XPATH, './/div[contains(@class, "icosdetalle") and img[@src="./App_Themes/1002/img/icos-42.png"]]/p').text.strip()
-                    if "2D" in formato:
-                        formato = "2D"
-                    elif "3D" in formato:
-                        formato = "3D"
-                    else:
-                        formato = "Desconocido"  # En caso de que no se encuentre ni 2D ni 3D
-                    
-                    horarios = pelicula.find_elements(By.CLASS_NAME, 'func-horario')
+                    idioma_element = pelicula.find_element(By.XPATH, './/div[contains(@class, "icosdetalle") and img[contains(@src, "icos-38.jpg")]]/p')
+                    idioma = idioma_element.text.strip()
+                except:
+                    idioma = "Desconocido"
 
-                    # Guardar la información de cada horario
-                    for horario in horarios:
-                        horario = horario.text.split("(")[0].strip()
-                        peliculas_info.append({
-                            'Fecha': datetime.now().strftime("%d/%m/%y"),
-                            'País': 'Honduras',
-                            'Cine': 'MetroCinemas',
-                            'Nombre Cine': cine['nombre'],
-                            'Título': nombre,
-                            'Hora': horario,
-                            'Idioma': idioma,
-                            'Formato': formato,
-                        })                        
-                except Exception as e:
-                    print(f"Error al procesar la película: {e}")
+                if "Inglés" in idioma:
+                    idioma = "Sub"
+                elif "Español" in idioma:
+                    idioma = "Dob"
 
-        #Crear un DataFrame de Pandas con la información
-        df = pd.DataFrame(peliculas_info)
+                # Intentar encontrar el formato
+                try:
+                    formato_element = pelicula.find_element(By.XPATH, './/div[contains(@class, "icosdetalle") and img[contains(@src, "icos-42.png")]]/p')
+                    formato = formato_element.text.strip()
+                except:
+                    formato = "Desconocido"
 
-        # Exportar el DataFrame a una hoja de Excel
-        df.to_excel('Panama-CinesModerno.xlsx', index=False)
+                if "2D" in formato:
+                    formato = "2D"
+                elif "3D" in formato:
+                    formato = "3D"
+                else:
+                    formato = "Desconocido"  # En caso de que no se encuentre ni 2D ni 3D
 
-        print("Datos exportados exitosamente a Panama-CinesModernos.xlsx")
+                horarios = pelicula.find_elements(By.CLASS_NAME, 'func-horario')
+
+                # Guardar la información de cada horario
+                for horario in horarios:
+                    horario = horario.text.split("(")[0].strip()
+                    peliculas_info.append({
+                        'Fecha': datetime.now().strftime("%d/%m/%y"),
+                        'País': 'Panamá',
+                        'Cine': 'Cines Modernos',
+                        'Nombre Cine': cine['nombre'],
+                        'Título': nombre,
+                        'Hora': horario,
+                        'Idioma': idioma,
+                        'Formato': formato,
+                    })
+            except Exception as e:
+                print(f"Error al procesar la película: {e}")
+
+    # Crear un DataFrame de Pandas con la información
+    df = pd.DataFrame(peliculas_info)
+
+    # Exportar el DataFrame a una hoja de Excel
+    df.to_excel('Panama-CinesModerno.xlsx', index=False)
+
+    print("Datos exportados exitosamente a Panama-CinesModernos.xlsx")
 
 except Exception as e:
-     print(f"{e} No se encontraron peliculas")
+    print(f"{e} No se encontraron peliculas")
 
 finally:
     driver.quit()
