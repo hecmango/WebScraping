@@ -44,11 +44,11 @@ def extract_movie_data(container):
                 datetime.datetime.now().strftime("%m-%d-%Y"),
                 "El Salvador",
                 "Multicinema",
-                cinema_name.replace("Complejo: ", ""),  # Remover "Complejo: " del nombre del cine
+                cinema_name.replace("Complejo: ", ""),  
                 title,
-                format_type,  # Asignar el formato extraído
-                language,  # Asignar el idioma ajustado
-                showtime
+                showtime,
+                language, 
+                format_type,  
             ])
         return movie_data
 
@@ -88,7 +88,7 @@ finally:
     driver.quit()
 
 # Exportamos los datos a Excel, sin las columnas de Clasificación, Promoción y Duración
-df = pd.DataFrame(data, columns=["Fecha", "Pais", "Cine", "Nombre Cine", "Título", "Formato", "Idioma", "Horario"])
+df = pd.DataFrame(data, columns=["Fecha", "Pais", "Cine", "Nombre Cine", "Título", "Hora","Idioma", "Formato"])
 df.to_excel("cartelera_multicinema.xlsx", index=False, engine='openpyxl')
 
 print("Datos exportados a cartelera_multicinema.xlsx")
