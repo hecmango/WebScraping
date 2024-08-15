@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
 from datetime import datetime
 import pandas as pd
 import unicodedata
@@ -71,7 +72,7 @@ def extraer_datos_cinepolis(urls):
                             horarios = [hora.text for hora in horas_div.find_elements(By.TAG_NAME, 'p')]
                             for horario in horarios:
                                 peliculas_info.append({
-                                    'Fecha': datetime.now().strftime("%d/%m/%y"),
+                                    'Fecha': datetime.now().strftime("%m-%d-%Y"),
                                     'Pais': url['pais'],
                                     'Cine': 'Cinepolis',
                                     'Nombre Cine': cine_name,
@@ -142,7 +143,7 @@ def extraer_datos_panama():
 
                         for showtime in showtimes_text:
                             data.append({
-                                'Fecha': datetime.now().strftime('%d/%m/%Y'),
+                                'Fecha': datetime.now().strftime("%m-%d-%Y"),
                                 'Pais': "Panama",
                                 'Cine': "Cinepolis",
                                 'Nombre Cine': cine_nombre,
@@ -208,7 +209,7 @@ def extraer_datos_honduras():
                     idioma = next((i for i in idiomas if i in formato_lenguaje), "N/A")
 
                     data_honduras.append({
-                        "Fecha": datetime.now().strftime("%d/%m/%Y"),
+                        "Fecha": datetime.now().strftime("%m-%d-%Y"),
                         "Pais": "Honduras",
                         "Cine": "Cinépolis",
                         "Nombre Cine": cine_nombre,
