@@ -66,7 +66,7 @@ try:
                                 'Nombre Cine': cine['nombre'],
                                 'Título': nombre_pelicula,
                                 'Hora': horario,
-                                'Idioma': idioma,
+                                'Idioma': idioma.upper(),
                                 'Formato': formato,  
                             })
                         except Exception as e:

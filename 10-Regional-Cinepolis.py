@@ -26,7 +26,6 @@ def cerrar_publicidad():
         if publicidad:
             cerrar_boton = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'takeover-close')))
             cerrar_boton.click()
-            WebDriverWait(driver, 5).until(EC.invisibility_of_element_located((By.CLASS_NAME, "tk")))
     except Exception:
         pass
 
