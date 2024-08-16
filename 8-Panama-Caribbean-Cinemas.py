@@ -14,12 +14,14 @@ url = 'https://caribbeancinemas.com/location/panama/'
 driver.get(url)
 
 def map_idioma(idioma_original):
-    """Función para mapear el idioma a 'Dob' o 'Sub'."""
+    #Función para mapear el idioma a 'Dob' o 'Sub'
     idioma_map = {
-        'SPANISH 0': 'Dob',
-        'SPANISH': 'Dob',
-        'English with Spanish Subtitles': 'Sub',
-        'Spanish': 'Dob'
+        'SPANISH 0': 'DOB',
+        '0 SPANISH' : 'DOB',
+        'SPANISH': 'DOB',
+        'English with Spanish Subtitles': 'SUB',
+        'HINDI WITH ENGLISH SUBTITLES' : 'SUB',
+        'Spanish': 'DOB'
     }
     return idioma_map.get(idioma_original, 'Desconocido')  # Valor predeterminado si no coincide
 
@@ -34,10 +36,8 @@ try:
     peliculas_info = []
 
     # Seleccionar el cine
-    teatros = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.LINK_TEXT, 'TEATROS')))
-    teatros.click()
-    cine_link = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.LINK_TEXT, 'Santiago')))
-    cine_link.click()
+    teatros = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.LINK_TEXT, 'TEATROS'))).click()
+    cine_link = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.LINK_TEXT, 'Santiago'))).click()
 
     for cine in cines:
         # Esperar a que se carguen las películas
@@ -47,11 +47,13 @@ try:
             nombre = pelicula.find_element(By.TAG_NAME, 'h1').text.strip()
             idioma_original = pelicula.find_element(By.TAG_NAME, 'i').text.strip()
             idioma = map_idioma(idioma_original)  # Mapea el idioma a 'Dob' o 'Sub'
-            horas = pelicula.find_elements(By.CLASS_NAME, 'myButton21') + pelicula.find_elements(By.CLASS_NAME, 'myButton2')
+            horas = pelicula.find_elements(By.CLASS_NAME, 'myButton21')
+            if not horas:
+                horas = 'Sin horarios disponibles'
 
             for hora in horas:
                 peliculas_info.append({
-                    'Fecha': datetime.now().strftime("%d/%m/%y"),
+                    'Fecha': datetime.now().strftime("%m-%d-%y"),
                     'País': 'Panama',
                     'Cine': 'CaribeanCinema',
                     'Nombre Cine': cine['nombre'],
@@ -61,9 +63,8 @@ try:
                     'Formato': '2D',
                 })
 
-        # Volver a la página principal de teatros
-        teatros = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH,'//*[@id="menu-main-menu"]/a')))
-        teatros.click()
+        # Ir al siguiente cine
+        teatro2 = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH,'//*[@id="menu-main-menu"]/a'))).click()
 
     # Crear un DataFrame de Pandas con la información
     df = pd.DataFrame(peliculas_info)

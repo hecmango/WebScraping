@@ -13,6 +13,16 @@ driver.maximize_window()
 url = 'https://cinestar.com.gt/'
 driver.get(url)
 
+def map_idioma(idioma_original):
+    #Función para mapear el idioma a 'Dob' o 'Sub'
+    idioma_map = {
+        'ESPAÑOL': 'DOB',
+        'SPANISH': 'DOB',
+        'ENGLISH': 'SUB',
+        'CXC ESPAÑOL': 'DOB'
+    }
+    return idioma_map.get(idioma_original, 'Desconocido')  # Valor predeterminado si no coincide
+
 try:
 
     # Lista de cines a procesar
@@ -26,22 +36,23 @@ try:
 
     for cine in cines:
         # Seleccionar el cine
-        teatros = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.LINK_TEXT, 'TEATROS')))
-        teatros.click()
-        cine_link = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.LINK_TEXT, cine['nombre'])))
-        cine_link.click()
+        teatros = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.LINK_TEXT, 'TEATROS'))).click()
+        cine_link = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.LINK_TEXT, cine['nombre']))).click()
 
         # Esperar a que se carguen las películas
         peliculas = WebDriverWait(driver, 5).until(EC.presence_of_all_elements_located((By.XPATH, '//*[@id="horarios"]/div')))
 
         for pelicula in peliculas:
             nombre = pelicula.find_element(By.TAG_NAME, 'h1').text.strip()
-            idioma = pelicula.find_element(By.TAG_NAME, 'i').text.strip()
-            horas = pelicula.find_elements(By.CLASS_NAME, 'myButton2') + pelicula.find_elements(By.CLASS_NAME, 'myButton21')
+            idioma_original = pelicula.find_element(By.TAG_NAME, 'i').text.strip()
+            idioma= map_idioma(idioma_original)
+            horas = pelicula.find_elements(By.CLASS_NAME, 'myButton21')
+            if not horas:
+                horas = 'Sin horarios disponibles'
 
             for hora in horas:
                 peliculas_info.append({
-                    'Fecha': datetime.now().strftime("%d/%m/%y"),
+                    'Fecha': datetime.now().strftime("%m-%d-%y"),
                     'País': 'Guatemala',
                     'Cine': 'CineStar',
                     'Nombre Cine': cine['nombre'],

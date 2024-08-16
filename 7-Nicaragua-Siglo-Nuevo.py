@@ -54,11 +54,11 @@ try:
                 formato = next((f for f in posibles_formatos if f in formato_idioma.text), "N/A")
                 idioma = next((f for f in posibles_idiomas if f in formato_idioma.text), "N/A")
 
-                # Cambiar "Subtitulada" o "SUBT" por "SUB" y "Doblada" o "DOB" por "DOB"
+                # Cambiar "Subtitulada" por "SUB" y "Doblada" por "DOB"
                 if idioma in ["Subtitulada"]:
-                    idioma = "Sub"
+                    idioma = "SUB"
                 elif idioma in ["Doblada"]:
-                    idioma = "Dob"
+                    idioma = "DOB"
     
                 horarios_container = cartelera.find_elements(By.XPATH, './/div[@align="center"]')
                 if(horarios_container):
@@ -70,16 +70,16 @@ try:
                             idioma_en_horario = next((f for f in posibles_idiomas if f in horario.text), "N/A")
                             if idioma_en_horario != "N/A":
                                 if idioma_en_horario == 'SUBT':
-                                    idioma='Sub'
+                                    idioma='SUB'
                                 else:
-                                    idioma='Dob'
+                                    idioma='DOB'
                                 hora = hora.replace(idioma_en_horario, "")
 
                             if not horario.text or horario.text == "NO DISPONIBLE":
                                 hora = "Sin Horarios Disponibles"
                                 
                             peliculas_info.append({
-                                'Fecha': datetime.now().strftime("%d/%m/%y"),
+                                'Fecha': datetime.now().strftime("%m-%d-%y"),
                                 'País': 'Nicaragua',
                                 'Cine': 'Siglo Nuevo',
                                 'Nombre Cine': cine_nombre,
@@ -91,9 +91,9 @@ try:
                         except StaleElementReferenceException:
                             print("      Hora: No disponible")
                 else:
-                    # Caso donde no hay horarios_container
+                    # Caso donde no hay horarios
                     peliculas_info.append({
-                        'Fecha': datetime.now().strftime("%d/%m/%y"),
+                        'Fecha': datetime.now().strftime("%m-%d-%y"),
                         'País': 'Nicaragua',
                         'Cine': 'Siglo Nuevo',
                         'Nombre Cine': cine_nombre,

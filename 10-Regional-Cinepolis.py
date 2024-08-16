@@ -126,9 +126,9 @@ def extraer_datos_panama():
                     title_element = movie.find_element(By.CSS_SELECTOR, "header h3 a")
                     title = title_element.text.strip()
                     
-                    formats = movie.find_elements(By.CSS_SELECTOR, "div.horarioExp")
+                    formats = movie.find_elements(By.CSS_SELECTOR, "div.horarioExp") # Formato y horario
                     for format_section in formats:
-                        format_text = format_section.find_element(By.CSS_SELECTOR, "div.col3.cf").text.strip().replace('\n', ' ')
+                        format_text = format_section.find_element(By.CSS_SELECTOR, "div.col3.cf").text.strip().replace('\n', ' ') # formato
                         showtimes = format_section.find_elements(By.CSS_SELECTOR, "time.btn.btnhorario a")
                         showtimes_text = [showtime.text.strip() for showtime in showtimes if showtime.text.strip()]
 
@@ -225,16 +225,16 @@ def extraer_datos_honduras():
 
 try:
     urls = [
-        {'url': 'https://cinepolis.com.gt/', 'pais': 'Guatemala'}, 
+        # {'url': 'https://cinepolis.com.gt/', 'pais': 'Guatemala'}, 
         {'url': 'https://cinepolis.com.sv/', 'pais': 'El Salvador'},
-        {'url': 'https://cinepolis.co.cr/', 'pais': 'Costa Rica'},
+        # {'url': 'https://cinepolis.co.cr/', 'pais': 'Costa Rica'},
     ]
     
-    datos_cinepolis = extraer_datos_cinepolis(urls)
-    datos_panama = extraer_datos_panama()
+    # datos_cinepolis = extraer_datos_cinepolis(urls)
+    # datos_panama = extraer_datos_panama()
     datos_honduras = extraer_datos_honduras()
 
-    df = pd.DataFrame( datos_cinepolis+ datos_panama + datos_honduras)
+    df = pd.DataFrame(datos_honduras)
     df.to_excel(f"cartelera_{datetime.now().strftime('%Y-%m-%d')}.xlsx", index=False)
     print(f"Datos exportados exitosamente a cartelera_{datetime.now().strftime('%Y-%m-%d')}.xlsx")
 finally:
